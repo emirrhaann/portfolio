@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sometype+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="portfolio-container">
+        <div class="content-wrapper">
+            <!-- Profile Section -->
+            <section class="profile-section">
+                <img src="./assets/pp.jpeg" alt="Profile photo" class="profile-photo" width="120" height="120">
+            </section>
+
+            <!-- Connector Line -->
+            <div class="connector-line"></div>
+
+            <!-- Welcome Card -->
+            <section class="welcome-section">
+                <div class="welcome-card">
+                    <h1>Welcome to My Portfolio</h1>
+                </div>
+            </section>
+
+            <!-- Connector Line -->
+            <div class="connector-line"></div>
+
+            <!-- Preface Section -->
+            <section class="preface-section">
+                <div class="preface-card">
+                    <p>Adaptable to Agile/Scrum working systems; I establish clear communication, take responsibility, and drive rapid prototyping/iteration processes. In addition to core game development, I contribute at a support level in 3D modeling, game design, and basic video editing. I adapt easily to new tools and systems and learn quickly. I am always open to discussion and believe that every idea is worth considering.</p>
+                </div>
+            </section>
+
+            <!-- Connector Line -->
+            <div class="connector-line"></div>
+
+            <!-- Info Bars Section -->
+            <section class="info-bars-section">
+                <div class="info-bar info-bar--one">
+                    <span class="info-bar__text">Game Development</span>
+                    <svg class="info-bar__icon" width="0" height="0" viewBox="0 0 0 0" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7 6V3C7 2.45 7.45 2 8 2H16C16.55 2 17 2.45 17 3V6H20V8H19V19C19 20.1 18.1 21 17 21H7C5.9 21 5 20.1 5 19V8H4V6H7ZM9 4V6H15V4H9ZM7 8V19H17V8H7Z" fill="currentColor"/>
+                        <path d="M9 10H11V17H9V10ZM13 10H15V17H13V10Z" fill="currentColor"/>
+                    </svg>
+                </div>
+                
+                <!-- New Unity/C#/Shader Graph bars -->
+                <div class="tech-bars-row">
+                    <div class="info-bar info-bar--unity">
+                        <span class="info-bar__text">Unity</span>
+                        <svg class="info-bar__icon" width="0" height="0" viewBox="0 0 0 0" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L2 7V17L12 22L22 17V7L12 2ZM12 4.26L19.5 8.5L12 12.74L4.5 8.5L12 4.26Z" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div class="info-bar info-bar--csharp">
+                        <span class="info-bar__text">C#</span>
+                        <svg class="info-bar__icon" width="0" height="0" viewBox="0 0 0 0" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12S6.48 22 12 22 22 17.52 22 12 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div class="info-bar info-bar--shader">
+                        <span class="info-bar__text">Shader Graph</span>
+                        <svg class="info-bar__icon" width="0" height="0" viewBox="0 0 0 0" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="currentColor"/>
+                            <path d="M19 15L20.09 18.26L23 19L20.09 19.74L19 23L17.91 19.74L15 19L17.91 18.26L19 15Z" fill="currentColor"/>
+                        </svg>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Single Connector Trunk Wrapper -->
+            <div class="connector-trunk-wrapper">
+                <!-- Games Section -->
+                <section class="games-section">
+                    <div class="games-row">
+                        <a href="#" class="game-button" data-game-index="0" role="button" tabindex="0" aria-label="Mobile Adventure game">
+                            <img src="./assets/game1-icon.png" alt="Mobile Adventure icon" width="120" height="120" loading="lazy">
+                        </a>
+                        <a href="#" class="game-button" data-game-index="1" role="button" tabindex="0" aria-label="Puzzle Master game">
+                            <img src="./assets/game2-icon.png" alt="Puzzle Master icon" width="120" height="120" loading="lazy">
+                        </a>
+                        <a href="#" class="game-button" data-game-index="2" role="button" tabindex="0" aria-label="Arcade Classic game">
+                            <img src="./assets/game3-icon.png" alt="Arcade Classic icon" width="120" height="120" loading="lazy">
+                        </a>
+                        <a href="#" class="game-button" data-game-index="3" role="button" tabindex="0" aria-label="Game Four game">
+                            <img src="./assets/game4-icon.png" alt="Game Four icon" width="120" height="120" loading="lazy">
+                        </a>
+                    </div>
+                    <div class="connector-trunk-wrapper-after"></div>
+                </section>
+            </div>
+
+            <!-- LinkedIn Section -->
+            <section class="social-section">
+                <a href="https://www.linkedin.com/in/emirhan-%C5%9Fahint%C3%BCrk-9332441a1/" class="linkedin-button" target="_blank" rel="noopener" aria-label="LinkedIn Profile">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20.447 20.452H16.893V14.883C16.893 13.555 16.866 11.846 15.041 11.846C13.188 11.846 12.905 13.291 12.905 14.785V20.452H9.351V9H12.765V10.561H12.811C13.288 9.661 14.448 8.711 16.181 8.711C19.782 8.711 20.448 11.081 20.448 14.166V20.452H20.447ZM5.337 7.433C4.193 7.433 3.274 6.507 3.274 5.366C3.274 4.224 4.194 3.299 5.337 3.299C6.477 3.299 7.401 4.224 7.401 5.366C7.401 6.507 6.476 7.433 5.337 7.433ZM7.119 20.452H3.555V9H7.119V20.452ZM22.225 0H1.771C0.792 0 0 0.774 0 1.729V22.271C0 23.227 0.792 24 1.771 24H22.222C23.2 24 24 23.227 24 22.271V1.729C24 0.774 23.2 0 22.222 0H22.225Z" fill="white"/>
+                    </svg>
+                </a>
+            </section>
+        </div>
+
+        <!-- Floating Preview -->
+        <div id="preview" class="preview-card" aria-hidden="true">
+            <img src="" alt="" class="preview-image" width="280" height="160">
+            <h2 class="preview-title"></h2>
+            <button class="preview-cta">Open on App Store</button>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

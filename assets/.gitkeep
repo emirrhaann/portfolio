@@ -1,0 +1,23 @@
+# Placeholder file to ensure assets directory is tracked by git
+
+## Required Assets
+
+Add the following files to this directory:
+
+- profile.jpg (120x120px) - Your profile photo
+- game1-icon.png (100x100px) - First game icon  
+- game1-preview.jpg (280x160px) - First game preview
+- game2-icon.png (100x100px) - Second game icon
+- game2-preview.jpg (280x160px) - Second game preview  
+- game3-icon.png (100x100px) - Third game icon
+- game3-preview.jpg (280x160px) - Third game preview
+
+## Placeholder Data URLs
+
+For testing purposes, you can temporarily use data URLs or placeholder services:
+
+- Profile: https://i.pravatar.cc/120
+- Game icons: https://via.placeholder.com/100x100/bfa2ff/111?text=Game+1
+- Game previews: https://via.placeholder.com/280x160/f8f9fa/111?text=Preview+1
+
+Remember to replace with your actual assets before deployment!
