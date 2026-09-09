@@ -5,7 +5,10 @@ const GAMES = [
     icon: "./assets/game1-icon.png",
     preview: "./assets/game1-preview.png",
     link: "https://apps.apple.com/hn/app/stitch-and-match/id6745091169",
-    alt: "Mobile Adventure icon"
+    alt: "Mobile Adventure icon",
+    demoUrl: "https://stitch-and-match-demo.vercel.app",
+    demoAspect: "9 / 16",
+    demoPanelWidth: "380px"
   },
   {
     name: "Stretch Block Match",
@@ -19,7 +22,10 @@ const GAMES = [
     icon: "./assets/game3-icon.png",
     preview: "./assets/game3-preview.png",
     link: "https://apps.apple.com/hn/app/coffee-express/id6741320194",
-    alt: "Arcade Classic icon"
+    alt: "Arcade Classic icon",
+    demoUrl: "https://coffee-express-demo.vercel.app",
+    demoAspect: "9 / 16",
+    demoPanelWidth: "380px"
   },
   {
     name: "Pack Rush",
@@ -27,7 +33,9 @@ const GAMES = [
     preview: "./assets/game4-preview.png",
     link: "https://apps.apple.com/hn/app/pack-rush/id6742317654",
     alt: "Game Four icon",
-    demoUrl: "https://pack-rush-demo.vercel.app"
+    demoUrl: "https://pack-rush-demo.vercel.app",
+    demoAspect: "8 / 5",
+    demoPanelWidth: "560px"
   }
 ];
 
@@ -107,6 +115,16 @@ function openDemoModal(game) {
   demoModalTitle.textContent = game.name;
   demoModalFrame.title = `${game.name} playable demo`;
   demoModalFrame.src = game.demoUrl;
+
+  const frameWrap = demoModal.querySelector('.demo-modal__frame-wrap');
+  if (frameWrap) {
+    frameWrap.style.aspectRatio = game.demoAspect || '9 / 16';
+  }
+
+  const panel = demoModal.querySelector('.demo-modal__panel');
+  if (panel) {
+    panel.style.width = `min(${game.demoPanelWidth || '380px'}, 92vw)`;
+  }
 
   showDemoModal = true;
   demoModal.setAttribute('aria-hidden', 'false');
