@@ -26,7 +26,8 @@ const GAMES = [
     icon: "./assets/game4-icon.png",
     preview: "./assets/game4-preview.png",
     link: "https://apps.apple.com/hn/app/pack-rush/id6742317654",
-    alt: "Game Four icon"
+    alt: "Game Four icon",
+    demoUrl: "https://pack-rush-demo.vercel.app"
   }
 ];
 
@@ -43,7 +44,16 @@ let previewCard = null;
 let previewImage = null;
 let previewTitle = null;
 let previewCta = null;
+let previewDemoCta = null;
 let gameButtons = [];
+
+// Demo modal elements
+let demoModal = null;
+let demoModalFrame = null;
+let demoModalTitle = null;
+let demoModalClose = null;
+let demoModalBackdrop = null;
+let showDemoModal = false;
 
 // Utility functions
 function detectMobile() {
@@ -70,11 +80,54 @@ function updatePreviewContent(game) {
   previewImage.src = game.preview;
   previewImage.alt = `${game.name} preview`;
   previewTitle.textContent = game.name;
-  
+
   // Update CTA link to match the game's link
   if (previewCta) {
     previewCta.onclick = () => openGameLink(game);
   }
+
+  // Show/wire the Play Demo CTA only for games that have a demo
+  if (previewDemoCta) {
+    if (game.demoUrl) {
+      previewDemoCta.hidden = false;
+      previewDemoCta.onclick = () => openDemoModal(game);
+    } else {
+      previewDemoCta.hidden = true;
+      previewDemoCta.onclick = null;
+    }
+  }
+}
+
+// Demo modal functions
+function openDemoModal(game) {
+  if (!game || !game.demoUrl || !demoModal) return;
+
+  hideGamePreview();
+
+  demoModalTitle.textContent = game.name;
+  demoModalFrame.title = `${game.name} playable demo`;
+  demoModalFrame.src = game.demoUrl;
+
+  showDemoModal = true;
+  demoModal.setAttribute('aria-hidden', 'false');
+  demoModal.classList.add('is-visible');
+  document.body.classList.add('demo-modal-open');
+
+  if (demoModalClose) {
+    demoModalClose.focus();
+  }
+}
+
+function closeDemoModal() {
+  if (!demoModal) return;
+
+  showDemoModal = false;
+  demoModal.setAttribute('aria-hidden', 'true');
+  demoModal.classList.remove('is-visible');
+  document.body.classList.remove('demo-modal-open');
+
+  // Clear the iframe src so the WebGL build fully unloads (stops audio/CPU usage)
+  demoModalFrame.src = '';
 }
 
 function showGamePreview(game, buttonElement) {
@@ -225,6 +278,12 @@ function handleGameClick(event) {
 }
 
 function handleKeyDown(event) {
+  // Escape closes the demo modal first (it sits above everything else)
+  if (event.key === 'Escape' && showDemoModal) {
+    closeDemoModal();
+    return;
+  }
+
   // Handle keyboard navigation
   if (event.target.classList.contains('game-button')) {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -235,7 +294,7 @@ function handleKeyDown(event) {
       hideGamePreview();
     }
   }
-  
+
   // Allow escape to close preview from anywhere
   if (event.key === 'Escape' && showPreview) {
     hideGamePreview();
@@ -288,7 +347,14 @@ function initializeApp() {
   previewImage = previewCard.querySelector('.preview-image');
   previewTitle = previewCard.querySelector('.preview-title');
   previewCta = previewCard.querySelector('.preview-cta');
+  previewDemoCta = previewCard.querySelector('.preview-demo-cta');
   gameButtons = Array.from(document.querySelectorAll('.game-button'));
+
+  demoModal = document.getElementById('demo-modal');
+  demoModalFrame = demoModal.querySelector('.demo-modal__frame');
+  demoModalTitle = demoModal.querySelector('.demo-modal__title');
+  demoModalClose = demoModal.querySelector('.demo-modal__close');
+  demoModalBackdrop = demoModal.querySelector('.demo-modal__backdrop');
   
   // Preload images
   preloadImages();
@@ -320,7 +386,15 @@ function initializeApp() {
   if (previewCta) {
     previewCta.addEventListener('click', handlePreviewCtaClick);
   }
-  
+
+  // Set up demo modal close triggers
+  if (demoModalClose) {
+    demoModalClose.addEventListener('click', closeDemoModal);
+  }
+  if (demoModalBackdrop) {
+    demoModalBackdrop.addEventListener('click', closeDemoModal);
+  }
+
   // Global event listeners
   document.addEventListener('mousemove', handleMouseMove);
   document.addEventListener('keydown', handleKeyDown);

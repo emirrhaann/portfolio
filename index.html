@@ -112,7 +112,23 @@
         <div id="preview" class="preview-card" aria-hidden="true">
             <img src="" alt="" class="preview-image" width="280" height="160">
             <h2 class="preview-title"></h2>
-            <button class="preview-cta">Open on App Store</button>
+            <div class="preview-actions">
+                <button class="preview-cta">Open on App Store</button>
+                <button class="preview-demo-cta" hidden>Play Demo</button>
+            </div>
+        </div>
+
+        <!-- Game Demo Modal -->
+        <div id="demo-modal" class="demo-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="demo-modal-title">
+            <div class="demo-modal__backdrop"></div>
+            <div class="demo-modal__panel">
+                <button type="button" class="demo-modal__close" aria-label="Close demo">&times;</button>
+                <h2 id="demo-modal-title" class="demo-modal__title"></h2>
+                <p class="demo-modal__hint">Playable in-browser demo &mdash; a single level, just to get the feel.</p>
+                <div class="demo-modal__frame-wrap">
+                    <iframe class="demo-modal__frame" title="" src="" allow="autoplay"></iframe>
+                </div>
+            </div>
         </div>
     </main>
 

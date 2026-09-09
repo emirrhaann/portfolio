@@ -491,6 +491,133 @@ body {
   outline-offset: 2px;
 }
 
+.preview-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.preview-demo-cta {
+  background-color: var(--yellow);
+  border: 2px solid var(--text);
+  border-radius: 12px;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  pointer-events: auto;
+}
+
+.preview-demo-cta:hover,
+.preview-demo-cta:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-subtle);
+  outline: none;
+}
+
+.preview-demo-cta:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+/* Game Demo Modal */
+.demo-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.demo-modal.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.demo-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.demo-modal__panel {
+  position: relative;
+  background-color: var(--background-paper);
+  border: var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  width: min(560px, 92vw);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.demo-modal__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--text);
+  background-color: #ffffff;
+  color: var(--text);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.demo-modal__close:hover,
+.demo-modal__close:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-subtle);
+  outline: none;
+}
+
+.demo-modal__title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+
+.demo-modal__hint {
+  font-size: 0.8rem;
+  color: var(--text);
+  opacity: 0.75;
+  margin: 0 0 16px;
+}
+
+.demo-modal__frame-wrap {
+  width: 100%;
+  aspect-ratio: 8 / 5;
+  max-height: 70vh;
+  border: 2px solid var(--text);
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #000000;
+}
+
+.demo-modal__frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
 /* Mobile Styles */
 @media (max-width: 768px) {
   :root {
