@@ -10,7 +10,9 @@ const GAMES = [
   {
     name: "Stretch Block Match",
     icon: "./assets/game2-icon.png",
-    preview: "./assets/game2-preview.png"
+    preview: "./assets/game2-preview.png",
+    demoUrl: "./demos/stretch-block-match/",
+    demoAspect: 9 / 16
   },
   {
     name: "Coffee Express!",
