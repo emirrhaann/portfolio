@@ -1,75 +1,68 @@
-﻿// Game data model
+// Game data model
 const GAMES = [
   {
     name: "Stitch and Match",
     icon: "./assets/game1-icon.png",
     preview: "./assets/game1-preview.png",
-    link: "https://apps.apple.com/hn/app/stitch-and-match/id6745091169",
-    alt: "Mobile Adventure icon",
     demoUrl: "https://stitch-and-match-demo.vercel.app",
-    demoAspect: "9 / 16",
-    demoPanelWidth: "380px"
+    demoAspect: 9 / 16
   },
   {
     name: "Stretch Block Match",
     icon: "./assets/game2-icon.png",
-    preview: "./assets/game2-preview.png",
-    link: "https://apps.apple.com/hn/app/stretch-block-match/id6746163246",
-    alt: "Puzzle Master icon"
+    preview: "./assets/game2-preview.png"
   },
   {
     name: "Coffee Express!",
     icon: "./assets/game3-icon.png",
     preview: "./assets/game3-preview.png",
-    link: "https://apps.apple.com/hn/app/coffee-express/id6741320194",
-    alt: "Arcade Classic icon",
     demoUrl: "https://coffee-express-demo.vercel.app",
-    demoAspect: "9 / 16",
-    demoPanelWidth: "380px"
+    demoAspect: 9 / 16
   },
   {
     name: "Pack Rush",
     icon: "./assets/game4-icon.png",
     preview: "./assets/game4-preview.png",
-    link: "https://apps.apple.com/hn/app/pack-rush/id6742317654",
-    alt: "Game Four icon",
     demoUrl: "https://pack-rush-demo.vercel.app",
-    demoAspect: "8 / 5",
-    demoPanelWidth: "560px"
+    demoAspect: 8 / 5
   }
 ];
 
+const DEFAULT_HINT = "Playable demo — one level to get the feel.";
+const ROTATE_HINT = "Tip: rotate your phone for a bigger view.";
+
 // State management
-let currentGame = null;
-let showPreview = false;
-let mousePosition = { x: 0, y: 0 };
 let isMobile = false;
-let mobileClickTimer = null;
-let lastClickedGame = null;
+let showPreview = false;
+let previewHideTimer = null;
+let activeDemoGame = null;
+let lastDemoTrigger = null;
+let projectVideo = null;
+let projectVideoInView = false;
 
 // DOM elements
 let previewCard = null;
 let previewImage = null;
 let previewTitle = null;
-let previewCta = null;
-let previewDemoCta = null;
+let previewHint = null;
 let gameButtons = [];
 
-// Demo modal elements
 let demoModal = null;
+let demoPanel = null;
+let demoHeader = null;
+let demoFrameWrap = null;
 let demoModalFrame = null;
 let demoModalTitle = null;
+let demoModalHint = null;
 let demoModalClose = null;
+let demoModalFullscreen = null;
 let demoModalBackdrop = null;
-let showDemoModal = false;
 
 // Utility functions
 function detectMobile() {
-  // Check for touch capability and screen size
+  // Hover previews only make sense with a precise pointer
   return (
-    'ontouchstart' in window ||
-    navigator.maxTouchPoints > 0 ||
-    window.matchMedia('(pointer: coarse)').matches ||
+    window.matchMedia('(hover: none), (pointer: coarse)').matches ||
     window.innerWidth <= 768
   );
 }
@@ -82,351 +75,322 @@ function preloadImages() {
   });
 }
 
-function updatePreviewContent(game) {
-  if (!game) return;
-  
-  previewImage.src = game.preview;
-  previewImage.alt = `${game.name} preview`;
-  previewTitle.textContent = game.name;
-
-  // Update CTA link to match the game's link
-  if (previewCta) {
-    previewCta.onclick = () => openGameLink(game);
-  }
-
-  // Show/wire the Play Demo CTA only for games that have a demo
-  if (previewDemoCta) {
-    if (game.demoUrl) {
-      previewDemoCta.hidden = false;
-      previewDemoCta.onclick = () => openDemoModal(game);
-    } else {
-      previewDemoCta.hidden = true;
-      previewDemoCta.onclick = null;
-    }
-  }
+function getGame(button) {
+  return GAMES[parseInt(button.getAttribute('data-game-index'), 10)];
 }
 
-// Demo modal functions
-function openDemoModal(game) {
-  if (!game || !game.demoUrl || !demoModal) return;
-
-  hideGamePreview();
-
-  demoModalTitle.textContent = game.name;
-  demoModalFrame.title = `${game.name} playable demo`;
-  demoModalFrame.src = game.demoUrl;
-
-  const frameWrap = demoModal.querySelector('.demo-modal__frame-wrap');
-  if (frameWrap) {
-    frameWrap.style.aspectRatio = game.demoAspect || '9 / 16';
-  }
-
-  const panel = demoModal.querySelector('.demo-modal__panel');
-  if (panel) {
-    panel.style.width = `min(${game.demoPanelWidth || '380px'}, 92vw)`;
-  }
-
-  showDemoModal = true;
-  demoModal.setAttribute('aria-hidden', 'false');
-  demoModal.classList.add('is-visible');
-  document.body.classList.add('demo-modal-open');
-
-  if (demoModalClose) {
-    demoModalClose.focus();
-  }
-}
-
-function closeDemoModal() {
-  if (!demoModal) return;
-
-  showDemoModal = false;
-  demoModal.setAttribute('aria-hidden', 'true');
-  demoModal.classList.remove('is-visible');
-  document.body.classList.remove('demo-modal-open');
-
-  // Clear the iframe src so the WebGL build fully unloads (stops audio/CPU usage)
-  demoModalFrame.src = '';
-}
-
+// Preview card
 function showGamePreview(game, buttonElement) {
   if (!game || !previewCard) return;
-  
-  currentGame = game;
+
   showPreview = true;
-  
-  updatePreviewContent(game);
-  
-  if (isMobile) {
-    // On mobile, center the preview above the buttons
-    const gamesSection = document.querySelector('.games-section');
-    const rect = gamesSection.getBoundingClientRect();
-    
-    previewCard.style.left = '50%';
-    previewCard.style.top = `${rect.top - 300}px`;
-    previewCard.style.transform = 'translateX(-50%) scale(0.96)';
-  } else {
-    // On desktop, position directly above the hovered game button
-    const rect = buttonElement.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const topY = rect.top - 350; // Increased offset for larger preview
-    
-    // Keep preview within viewport bounds
-    const previewWidth = 280;
-    const viewportWidth = window.innerWidth;
-    const leftBound = previewWidth / 2;
-    const rightBound = viewportWidth - previewWidth / 2;
-    
-    const clampedX = Math.max(leftBound, Math.min(rightBound, centerX));
-    
-    previewCard.style.left = `${clampedX}px`;
-    previewCard.style.top = `${Math.max(20, topY)}px`;
-    previewCard.style.transform = 'translateX(-50%) scale(0.96)';
+  previewImage.src = game.preview;
+  previewImage.alt = `${game.name} screenshot`;
+  previewTitle.textContent = game.name;
+  previewHint.textContent = game.demoUrl ? 'Click to play the demo' : 'Demo coming soon';
+
+  const cardWidth = previewCard.offsetWidth;
+  const cardHeight = previewCard.offsetHeight;
+  const rect = buttonElement.getBoundingClientRect();
+  const gap = 16;
+
+  // Keep the card inside the viewport horizontally
+  const half = cardWidth / 2 + 8;
+  const centerX = Math.max(half, Math.min(window.innerWidth - half, rect.left + rect.width / 2));
+
+  // Prefer above the icon; fall back to below when there isn't room
+  let top = rect.top - cardHeight - gap;
+  if (top < 8) {
+    top = rect.bottom + gap;
   }
-  
+  top = Math.max(8, Math.min(top, window.innerHeight - cardHeight - 8));
+
+  previewCard.style.left = `${centerX}px`;
+  previewCard.style.top = `${top}px`;
   previewCard.setAttribute('aria-hidden', 'false');
   previewCard.classList.add('is-visible');
-  
-  // For keyboard users, focus the CTA button after a brief delay
-  if (!isMobile && document.activeElement && document.activeElement.classList.contains('game-button')) {
-    setTimeout(() => {
-      if (previewCta && showPreview) {
-        previewCta.focus();
-      }
-    }, 200);
-  }
 }
 
 function hideGamePreview() {
   showPreview = false;
-  currentGame = null;
-  
+  clearTimeout(previewHideTimer);
+
   if (previewCard) {
     previewCard.setAttribute('aria-hidden', 'true');
     previewCard.classList.remove('is-visible');
   }
 }
 
-function openGameLink(game) {
-  if (game && game.link) {
-    window.open(game.link, '_blank', 'noopener,noreferrer');
+// Demo modal
+function isFullscreenSupported() {
+  return Boolean(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+}
+
+function getFullscreenElement() {
+  return document.fullscreenElement || document.webkitFullscreenElement || null;
+}
+
+function toggleDemoFullscreen() {
+  if (getFullscreenElement()) {
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    return;
+  }
+  const request = demoFrameWrap.requestFullscreen || demoFrameWrap.webkitRequestFullscreen;
+  if (request) {
+    request.call(demoFrameWrap);
+  }
+}
+
+// Size the game frame to the largest box with the game's aspect ratio that fits the screen,
+// so portrait and landscape builds never get squashed or cut off.
+function layoutDemoFrame() {
+  if (!activeDemoGame) return;
+
+  const viewportWidth = document.documentElement.clientWidth;
+  const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  const compact = viewportWidth <= 600 || viewportHeight <= 560;
+  demoModal.classList.toggle('is-compact', compact);
+
+  const ratio = activeDemoGame.demoAspect || 9 / 16;
+  const wantsRotate = ratio > 1 && viewportHeight > viewportWidth;
+  demoModalHint.textContent = wantsRotate ? ROTATE_HINT : DEFAULT_HINT;
+
+  const panelStyle = getComputedStyle(demoPanel);
+  const wrapStyle = getComputedStyle(demoFrameWrap);
+  const chromeX =
+    parseFloat(panelStyle.paddingLeft) + parseFloat(panelStyle.paddingRight) +
+    parseFloat(panelStyle.borderLeftWidth) + parseFloat(panelStyle.borderRightWidth) +
+    parseFloat(wrapStyle.borderLeftWidth) + parseFloat(wrapStyle.borderRightWidth);
+  const hintStyle = getComputedStyle(demoModalHint);
+  const hintHeight = demoModalHint.offsetHeight
+    ? demoModalHint.offsetHeight + parseFloat(hintStyle.marginTop) + parseFloat(hintStyle.marginBottom)
+    : 0;
+  const chromeY =
+    parseFloat(panelStyle.paddingTop) + parseFloat(panelStyle.paddingBottom) +
+    parseFloat(panelStyle.borderTopWidth) + parseFloat(panelStyle.borderBottomWidth) +
+    demoHeader.offsetHeight + parseFloat(getComputedStyle(demoHeader).marginBottom) + hintHeight +
+    parseFloat(wrapStyle.borderTopWidth) + parseFloat(wrapStyle.borderBottomWidth);
+
+  const outerMargin = compact ? 0 : 48;
+  const maxWidth = Math.min(viewportWidth - outerMargin - chromeX, 1100);
+  const maxHeight = viewportHeight - outerMargin - chromeY;
+
+  let width = maxWidth;
+  let height = width / ratio;
+  if (height > maxHeight) {
+    height = maxHeight;
+    width = height * ratio;
+  }
+
+  demoFrameWrap.style.width = `${Math.floor(width)}px`;
+  demoFrameWrap.style.height = `${Math.floor(height)}px`;
+  demoPanel.style.width = compact ? '' : `${Math.floor(width + chromeX)}px`;
+}
+
+function openDemoModal(game, trigger) {
+  if (!game || !game.demoUrl || !demoModal) return;
+
+  hideGamePreview();
+  activeDemoGame = game;
+  syncProjectVideo();
+  lastDemoTrigger = trigger || null;
+
+  demoModalTitle.textContent = game.name;
+  demoModalFrame.title = `${game.name} playable demo`;
+
+  demoModal.setAttribute('aria-hidden', 'false');
+  demoModal.classList.add('is-visible');
+  document.documentElement.classList.add('demo-modal-open');
+
+  layoutDemoFrame();
+  demoModalFrame.src = game.demoUrl;
+  demoModalClose.focus();
+}
+
+function closeDemoModal() {
+  if (!demoModal || !activeDemoGame) return;
+
+  if (getFullscreenElement()) {
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  }
+
+  activeDemoGame = null;
+  demoModal.setAttribute('aria-hidden', 'true');
+  demoModal.classList.remove('is-visible');
+  document.documentElement.classList.remove('demo-modal-open');
+
+  // Unload the WebGL build fully (stops audio/CPU usage)
+  demoModalFrame.src = 'about:blank';
+  syncProjectVideo();
+
+  if (lastDemoTrigger) {
+    lastDemoTrigger.focus({ preventScroll: true });
+    lastDemoTrigger = null;
+  }
+}
+
+// Featured project video: plays muted only while on screen, so it costs nothing until scrolled to
+function setupProjectVideo() {
+  const video = document.querySelector('.project-card__video');
+  const soundButton = document.querySelector('.project-card__sound');
+  if (!video || !soundButton) return;
+
+  projectVideo = video;
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(entries => {
+      projectVideoInView = entries[0].isIntersecting;
+      syncProjectVideo();
+    }, { threshold: 0.35 }).observe(video);
+  }
+
+  soundButton.addEventListener('click', () => {
+    video.muted = !video.muted;
+    soundButton.setAttribute('aria-pressed', String(!video.muted));
+    soundButton.setAttribute('aria-label', video.muted ? 'Unmute video' : 'Mute video');
+    syncProjectVideo();
+  });
+}
+
+function syncProjectVideo() {
+  if (!projectVideo) return;
+
+  // With reduced motion the video only plays once the visitor turns the sound on
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const shouldPlay = projectVideoInView && !activeDemoGame && (!reduceMotion || !projectVideo.muted);
+
+  if (shouldPlay) {
+    const playing = projectVideo.play();
+    if (playing) {
+      playing.catch(() => {});
+    }
+  } else {
+    projectVideo.pause();
   }
 }
 
 // Event handlers
-function handleMouseMove(event) {
-  mousePosition = { x: event.clientX, y: event.clientY };
-}
-
 function handleGameHover(event) {
   if (isMobile) return;
-  
-  const gameIndex = parseInt(event.currentTarget.getAttribute('data-game-index'));
-  const game = GAMES[gameIndex];
-  
-  if (game) {
-    showGamePreview(game, event.currentTarget);
-  }
-}
-
-function handleGameLeave(event) {
-  if (isMobile) return;
-  
-  hideGamePreview();
-}
-
-function handleGameFocus(event) {
-  if (isMobile) return;
-  
-  const gameIndex = parseInt(event.currentTarget.getAttribute('data-game-index'));
-  const game = GAMES[gameIndex];
-  
-  if (game) {
-    showGamePreview(game, event.currentTarget);
-  }
-}
-
-function handleGameBlur(event) {
-  if (isMobile) return;
-  
-  // Small delay to allow for focus to move to preview button
-  setTimeout(() => {
-    if (!previewCard.contains(document.activeElement)) {
-      hideGamePreview();
-    }
-  }, 100);
+  // Only keyboard focus should open the preview, not focus restored after a mouse click
+  if (event.type === 'focus' && !event.currentTarget.matches(':focus-visible')) return;
+  showGamePreview(getGame(event.currentTarget), event.currentTarget);
 }
 
 function handleGameClick(event) {
-  event.preventDefault();
-  
-  const gameIndex = parseInt(event.currentTarget.getAttribute('data-game-index'));
-  const game = GAMES[gameIndex];
-  
+  const button = event.currentTarget;
+  const game = getGame(button);
   if (!game) return;
-  
-  if (isMobile) {
-    // Mobile behavior: first tap shows preview, second tap opens link
-    if (currentGame === game && showPreview) {
-      // Second tap - open the link
-      openGameLink(game);
-      hideGamePreview();
-      lastClickedGame = null;
-    } else {
-      // First tap - show preview
-      showGamePreview(game, event.currentTarget);
-      lastClickedGame = game;
-      
-      // Clear any existing timer
-      if (mobileClickTimer) {
-        clearTimeout(mobileClickTimer);
-      }
-      
-      // Auto-hide preview after 5 seconds if no second tap
-      mobileClickTimer = setTimeout(() => {
-        if (currentGame === game) {
-          hideGamePreview();
-          lastClickedGame = null;
-        }
-      }, 5000);
-    }
-  } else {
-    // Desktop behavior: direct navigation
-    openGameLink(game);
-  }
-}
 
-function handleKeyDown(event) {
-  // Escape closes the demo modal first (it sits above everything else)
-  if (event.key === 'Escape' && showDemoModal) {
-    closeDemoModal();
+  if (game.demoUrl) {
+    openDemoModal(game, button);
     return;
   }
 
-  // Handle keyboard navigation
-  if (event.target.classList.contains('game-button')) {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      handleGameClick(event);
-    }
-    if (event.key === 'Escape' && showPreview) {
-      hideGamePreview();
-    }
-  }
-
-  // Allow escape to close preview from anywhere
-  if (event.key === 'Escape' && showPreview) {
-    hideGamePreview();
-  }
+  // No demo yet: on touch devices show the preview briefly instead
+  showGamePreview(game, button);
+  clearTimeout(previewHideTimer);
+  previewHideTimer = setTimeout(hideGamePreview, 3000);
 }
 
-function handlePreviewCtaClick(event) {
-  event.preventDefault();
-  if (currentGame) {
-    openGameLink(currentGame);
+function handleKeyDown(event) {
+  if (event.key !== 'Escape') return;
+
+  if (activeDemoGame) {
+    closeDemoModal();
+  } else if (showPreview) {
     hideGamePreview();
   }
 }
 
 function handleClickOutside(event) {
-  if (!isMobile || !showPreview) return;
-  
-  const target = event.target;
-  const isGameButton = target.closest('.game-button');
-  const isPreview = target.closest('.preview-card');
-  
-  if (!isGameButton && !isPreview) {
+  if (!showPreview) return;
+  if (!event.target.closest('.game-button')) {
     hideGamePreview();
-    lastClickedGame = null;
-    
-    if (mobileClickTimer) {
-      clearTimeout(mobileClickTimer);
-      mobileClickTimer = null;
-    }
   }
 }
 
 function handleResize() {
-  const wasMobile = isMobile;
   isMobile = detectMobile();
-  
-  // If switching between mobile and desktop, hide preview
-  if (wasMobile !== isMobile && showPreview) {
+  if (showPreview) {
     hideGamePreview();
   }
+  layoutDemoFrame();
 }
 
 // Initialize the application
 function initializeApp() {
-  // Detect mobile
   isMobile = detectMobile();
-  
-  // Get DOM elements
+
   previewCard = document.getElementById('preview');
   previewImage = previewCard.querySelector('.preview-image');
   previewTitle = previewCard.querySelector('.preview-title');
-  previewCta = previewCard.querySelector('.preview-cta');
-  previewDemoCta = previewCard.querySelector('.preview-demo-cta');
+  previewHint = previewCard.querySelector('.preview-hint');
   gameButtons = Array.from(document.querySelectorAll('.game-button'));
 
   demoModal = document.getElementById('demo-modal');
+  demoPanel = demoModal.querySelector('.demo-modal__panel');
+  demoHeader = demoModal.querySelector('.demo-modal__header');
+  demoFrameWrap = demoModal.querySelector('.demo-modal__frame-wrap');
   demoModalFrame = demoModal.querySelector('.demo-modal__frame');
   demoModalTitle = demoModal.querySelector('.demo-modal__title');
+  demoModalHint = demoModal.querySelector('.demo-modal__hint');
   demoModalClose = demoModal.querySelector('.demo-modal__close');
+  demoModalFullscreen = demoModal.querySelector('.demo-modal__fullscreen');
   demoModalBackdrop = demoModal.querySelector('.demo-modal__backdrop');
-  
-  // Preload images
+
   preloadImages();
-  
-  // Set up game buttons
-  gameButtons.forEach((button, index) => {
-    const game = GAMES[index];
-    if (game) {
-      // Update button attributes
-      button.setAttribute('aria-label', `${game.name} game`);
-      
-      // Update image src and alt
-      const img = button.querySelector('img');
-      if (img) {
-        img.src = game.icon;
-        img.alt = game.alt;
-      }
-      
-      // Add event listeners
-      button.addEventListener('mouseenter', handleGameHover);
-      button.addEventListener('mouseleave', handleGameLeave);
-      button.addEventListener('focus', handleGameFocus);
-      button.addEventListener('blur', handleGameBlur);
-      button.addEventListener('click', handleGameClick);
+  setupProjectVideo();
+
+  gameButtons.forEach(button => {
+    const game = getGame(button);
+    if (!game) return;
+
+    button.setAttribute('aria-label', game.demoUrl ? `Play ${game.name} demo` : `${game.name} (demo coming soon)`);
+
+    const img = button.querySelector('img');
+    if (img) {
+      img.src = game.icon;
     }
+
+    const item = button.closest('.game-item');
+    const label = item && item.querySelector('.game-name');
+    if (label) {
+      label.textContent = game.name;
+    }
+    if (item && !game.demoUrl) {
+      item.classList.add('game-item--soon');
+    }
+
+    button.addEventListener('mouseenter', handleGameHover);
+    button.addEventListener('mouseleave', hideGamePreview);
+    button.addEventListener('focus', handleGameHover);
+    button.addEventListener('blur', hideGamePreview);
+    button.addEventListener('click', handleGameClick);
   });
-  
-  // Set up preview CTA
-  if (previewCta) {
-    previewCta.addEventListener('click', handlePreviewCtaClick);
+
+  demoModalClose.addEventListener('click', closeDemoModal);
+  demoModalBackdrop.addEventListener('click', closeDemoModal);
+
+  if (isFullscreenSupported()) {
+    demoModalFullscreen.addEventListener('click', toggleDemoFullscreen);
+  } else {
+    // iPhone Safari can't fullscreen arbitrary elements
+    demoModalFullscreen.hidden = true;
   }
 
-  // Set up demo modal close triggers
-  if (demoModalClose) {
-    demoModalClose.addEventListener('click', closeDemoModal);
-  }
-  if (demoModalBackdrop) {
-    demoModalBackdrop.addEventListener('click', closeDemoModal);
-  }
-
-  // Global event listeners
-  document.addEventListener('mousemove', handleMouseMove);
   document.addEventListener('keydown', handleKeyDown);
   document.addEventListener('click', handleClickOutside);
   window.addEventListener('resize', handleResize);
-  
-  // Handle visibility change (tab switching)
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', layoutDemoFrame);
+  }
+
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && showPreview) {
       hideGamePreview();
     }
   });
-  
-  console.log('Portfolio initialized successfully');
 }
 
 // Wait for DOM to be ready
